@@ -52,11 +52,14 @@ class Player():
 		return len(self.deck)+len(self.discard)
 
 def war(player1, player2, ante_pool=[]):
+	#If there are not enough cards for a war, try shuffling
 	if len(player1.deck)<4:
 		player1.shuffle()
 	if len(player2.deck)<4:
 		player2.shuffle()
 
+	#If shuffling does not work, one player is almost dead.
+	#Initiate final war sequence
 	if player1.total()<=4 or player2.total()<=4:
 		final_war(player1, player2, ante_pool)
 		return
@@ -79,7 +82,7 @@ def war(player1, player2, ante_pool=[]):
 
 def final_war(player1, player2, ante_pool):
 	#If the last draw was the only remaining card, this becomes 
-	#the player's comparison card. Otherwise, use 4 card (after ante)
+	#the player's comparison card. Otherwise, use 4th card (after ante)
 	#or use deepest card after incomplete ante
 	if not bool(player1.deck):
 		player1_card = ante_pool[-2]
@@ -96,6 +99,8 @@ def final_war(player1, player2, ante_pool):
 		except IndexError:
 			player2_card = player2.deck[0]
 
+	#In the highly unlikely case where the final war leads to another war,
+	#The partial/complete last ante is summed to determine winner
 	if not winner(player1_card,player2_card,ante_pool):
 		player1_ante_sum = sum(player1.deck[-3:])
 		player2_ante_sum = sum(player2.deck[-3:])
