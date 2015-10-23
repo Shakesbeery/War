@@ -67,15 +67,10 @@ def war(player1, player2, ante_pool=[]):
 	player1_card = player1.draw()
 	player2_card = player2.draw()
 
-	if player1_card < player2_card:
-		player2.take(ante_pool)
-	elif player1_card > player2_card:
-		player1.take(ante_pool)
-	else:
+	if not winner:
 		if player1.total()<=4 or player2.total()<=4:
 			ante_pool.extend([player1_card,player2_card])
 			final_war(player1, player2, ante_pool)
-			return
 		else:
 			ante_pool.extend([player1.draw(),player1.draw(),player1.draw(),
 							player2.draw(),player2.draw(),player2.draw()])
@@ -101,17 +96,29 @@ def final_war(player1, player2, ante_pool):
 		except IndexError:
 			player2_card = player2.deck[0]
 
-	if player1_card < player2_card:
-		player2.take([player1_card,player2_card])
-	elif player1_card > player2_card:
-		player1.take([player1_card,player2_card])
-	else:
+	if not winner(player1_card,player2_card,ante_pool):
 		player1_ante_sum = sum(player1.deck[-3:])
 		player2_ante_sum = sum(player2.deck[-3:])
 		if player1_ante_sum>player2_ante_sum:
 			player1.take([player1_card,player2_card])
+			player1.take(ante_pool)
+			player1.take(player2.deck[-3:])
 		else:
 			player2.take([player1_card,player2_card])
+			player2.take(ante_pool)
+			player2.take(player1.deck[-3:])
+
+def winner(player1_card, player2_card, ante_pool=[]):
+	if player1_card < player2_card:
+		player2.take(ante_pool)
+		player2.take([player1_card,player2_card])
+		return True
+	elif player1_card > player2_card:
+		player1.take(ante_pool)
+		player1.take([player1_card,player2_card])
+		return True
+	else:
+		return False
 
 def generate_deck():
 	deck = []
@@ -130,15 +137,12 @@ if __name__ == '__main__':
 		player1_card = player1.draw()
 		player2_card = player2.draw()
 
-		if player1_card < player2_card:
-			player2.take([player1_card,player2_card])
-		elif player1_card > player2_card:
-			player1.take([player1_card,player2_card])
-		else:
+		if not winner(player1_card,player2_card):
 			if player1.total()<=4 or player2.total()<=4:
 				final_war(player1, player2, [player1_card,player2_card])
 			else:
 				war(player1, player2, [player1_card,player2_card])
+
 		if player1.no_cards() or player2.no_cards():
 			no_victor=False
 
